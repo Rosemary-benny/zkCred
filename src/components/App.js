@@ -64,60 +64,7 @@ class App extends Component {
             window.alert('Securex contract not deployed to detected network.')
         }
     }
-    getEvidencesOfCase = async () => {
-        console.log('Get Evidences Called')
-        const caseId = this.state.getCaseId
-        const contextCase = this.state.cases[caseId - 1];
-
-
-        for (var j = 1; j <= contextCase.totalEvidences; j++) {
-            let evd = await this.state.securex.methods.getEvidenceById(caseId, j).call()
-            this.setState({
-                evidences: [...this.state.evidences, evd]
-            })
-        }
-        console.log(this.state.evidences)
-    }
-
-    captureFile = event => {
-
-        event.preventDefault()
-        const file = event.target.files[0]
-        const reader = new window.FileReader()
-        reader.readAsArrayBuffer(file)
-
-        reader.onloadend = () => {
-            this.setState({ buffer: Buffer(reader.result) })
-            console.log('buffer', this.state.buffer)
-        }
-    }
-
-    uploadFile = () => {
-
-        console.log("Submitting file to ipfs...")
-
-        //adding file to the IPFS
-        ipfs.add(this.state.buffer, (error, result) => {
-            console.log('Ipfs result', result)
-            if (error) {
-                console.error(error)
-                return
-            }
-
-            this.setState({ loading: true, })
-
-            console.log(this.state.evidenceDetails)
-
-            this.state.securex.methods.registerEvidence(this.state.evidenceDetails.caseId,
-                this.state.evidenceDetails.description,
-                result[0].hash,
-
-                this.state.evidenceDetails.createdDate).send({ from: this.state.account }).on('transactionHash', (hash) => {
-                   window.location.reload()
-                    this.setState({ loading: false })
-                })
-        })
-    }
+   
     registerCase = () => {
         console.log("Age Verification")
 
@@ -125,14 +72,8 @@ class App extends Component {
 
         this.setState({ loading: true })
 
-        this.state.securex.methods.registerCase(this.state.caseDetails.courtId,
-
-            this.state.caseDetails.caseDescription,
-            this.state.caseDetails.startDateTime).send({ from: this.state.account }).on('transactionHash', (hash) => {
-                let newCaseId = this.state.cases.length + 1
-                window.alert("Successfully registered with Case ID: " + newCaseId)
-                this.setState({ loading: false })
-            })
+        this.state.securex.methods.registerCase(this.state.caseDetails.courtId
+          )
 
     }
 
@@ -144,14 +85,7 @@ class App extends Component {
             }
         });
     }
-    handleEvidenceInputChange = (event) => {
-        this.setState({
-            evidenceDetails: {
-                ...this.state.evidenceDetails,
-                [event.target.name]: event.target.value
-            }
-        });
-    }
+  
     handleEvidenceCaseInput = (event) => {
         this.setState({
             getCaseId: event.target.value
@@ -171,26 +105,10 @@ class App extends Component {
             account: '',
             securex: null,
             loading: true,
-            evidenceDetails: {
-                caseId: '',
-                description: '',
-
-                createdDate: ''
-            },
             caseDetails: {
-                courtId: '',
-
-                caseDescription: '',
-                startDateTime: ''
-            },
-            uploadedImage: '',
-            cases: [],
-            evidences: [],
-            getCaseId: ''
+                courtId: ''
+            }
         }
-
-        this.uploadFile = this.uploadFile.bind(this)
-        this.captureFile = this.captureFile.bind(this)
     }
 
     render() {
@@ -210,36 +128,21 @@ class App extends Component {
                                     <div className="content mr-auto ml-auto">
                                         <p>&nbsp;</p>
                                         <Card>
-                                            <Card.Header as="h2">Register Case</Card.Header>
+                                            <Card.Header as="h2">Verifying Age</Card.Header>
                                             <Card.Body>
-                                                <Card.Title>Provide the below details to register a case.</Card.Title>
+                                                <Card.Title>Enter your age</Card.Title>
 
                                                 <Form onSubmit={(event) => {
-                                                    console.log('Form Submitted')
+                                                    console.log('Age Submitted')
                                                     event.preventDefault()
                                                     this.registerCase();
 
                                                 }}>
                                                     <Form.Group className="mb-3">
-                                                        <Form.Label>Court ID</Form.Label>
-                                                        <Form.Control type="text" placeholder="Court ID" value={this.state.caseDetails.courtId}
-                                                            onChange={this.handleCaseInputChange} name="courtId" />
-
+                                                        <Form.Control type="text" placeholder="Age" value={this.state.caseDetails.courtId}
+                                                            onChange={this.handleCaseInputChange} name="age" />
                                                     </Form.Group>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Case Description</Form.Label>
-                                                        <Form.Control as="textarea" rows={3} placeholder="Case Description" value={this.state.caseDetails.caseDescription}
-                                                            onChange={this.handleCaseInputChange} name="caseDescription" />
-
-                                                    </Form.Group>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Start Date</Form.Label>
-                                                        <Form.Control type="date" placeholder="Select Date" value={this.state.caseDetails.startDateTime}
-                                                            onChange={this.handleCaseInputChange}
-                                                            name="startDateTime" />
-
-                                                    </Form.Group>
-                                                    <Button variant="primary" type="submit" >Register Case</Button>
+                                                    <Button variant="primary" type="submit" >Verify</Button>
 
                                                 </Form>
 
@@ -247,116 +150,7 @@ class App extends Component {
 
                                             </Card.Body>
                                         </Card>
-                                        <br /><br />
-                                        <Card>
-                                            <Card.Header as="h2">Submit Evidence</Card.Header>
-                                            <Card.Body>
-                                                <Card.Title>Provide the below details to submit an evidence.</Card.Title>
-
-                                                <Form onSubmit={(event) => {
-                                                    console.log('Form Submitted')
-                                                    event.preventDefault()
-
-                                                    this.uploadFile();
-
-                                                }}>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Case ID</Form.Label>
-                                                        <Form.Control type="text" placeholder="Case ID" value={this.state.evidenceDetails.caseId}
-                                                            onChange={this.handleEvidenceInputChange}
-                                                            name="caseId" />
-
-                                                    </Form.Group>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label >Upload Evidence File</Form.Label>
-                                                        <Form.Control type="file" id="fname"
-                                                            onChange={this.captureFile}
-                                                            name="fileHash"
-                                                            placeholder="Enter the Hash" />
-
-                                                    </Form.Group>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Date</Form.Label>
-                                                        <Form.Control type="date" placeholder="Select Date"
-                                                            name="createdDate"
-                                                            id="dateofbirth"
-                                                            value={this.state.evidenceDetails.createdDate}
-                                                            onChange={this.handleEvidenceInputChange} />
-
-                                                    </Form.Group>
-
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Evidence Description</Form.Label>
-                                                        <Form.Control as="textarea" rows={3} placeholder="Evidence Description"
-                                                            value={this.state.evidenceDetails.description}
-                                                            onChange={this.handleEvidenceInputChange} name="description" />
-
-                                                    </Form.Group>
-
-                                                    <Button variant="primary" type="submit" >Submit Evidence</Button>
-
-                                                </Form>
-
-
-
-                                            </Card.Body>
-                                        </Card>
-                                        <br /><br />
-                                        <Card>
-                                            <Card.Header as="h2">Get Evidences of a case</Card.Header>
-                                            <Card.Body>
-
-                                                <Form onSubmit={(event) => {
-                                                    console.log('Form Submitted')
-                                                    event.preventDefault()
-
-                                                    this.getEvidencesOfCase();
-
-                                                }}>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Label>Case ID</Form.Label>
-                                                        <Form.Control type="text" placeholder="Case ID" value={this.state.getCaseId}
-                                                            onChange={this.handleEvidenceCaseInput}
-                                                            name="caseId" />
-
-                                                    </Form.Group>
-
-
-                                                    <Button variant="primary" type="submit" >Get Evidences</Button>
-
-                                                </Form>
-
-
-
-                                            </Card.Body>
-                                        </Card>
-                                        {this.state.evidences.length > 0 ? this.state.evidences.map((evidence, key) => {
-                                            return (
-                                                <div className="card mb-4" key={key} >
-
-                                                    <ul id="imageList" className="list-group list-group-flush">
-                                                        <li className="list-group-item">
-                                                            <p className="text-center"><img src={`https://ipfs.infura.io/ipfs/${evidence[1]}`} style={{ maxWidth: '420px' }} /></p>
-                                                            <p>Evidence Description: {evidence[0]}</p>
-                                                            <p>Date: {evidence[2]}</p>
-                                                            <button
-                                                                className="btn btn-link btn-sm float-right pt-0"
-                                                                name={key}
-                                                                onClick={(event) => {
-                                                                    let tipAmount = window.web3.utils.toWei('0.1', 'Ether')
-
-                                                                    this.tipEvidenceOwner(evidence[3], tipAmount)
-                                                                }}
-                                                            >
-                                                                TIP 0.1 MATIC
-                                                            </button>
-                                                        </li>
-
-                                                    </ul>
-                                                </div>
-                                            )
-                                        }) : <p></p>}
-
+                                        <br /><br />              
                                         <p>&nbsp;</p>
 
                                     </div>
