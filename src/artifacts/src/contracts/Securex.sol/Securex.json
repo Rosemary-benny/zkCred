@@ -1,6 +1,6 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "Securex",
+  "contractName": "zkCred",
   "sourceName": "src/contracts/Securex.sol",
   "abi": [
     {
