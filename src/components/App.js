@@ -64,7 +64,60 @@ class App extends Component {
             window.alert('Securex contract not deployed to detected network.')
         }
     }
-   
+    getEvidencesOfCase = async () => {
+        console.log('Get Evidences Called')
+        const caseId = this.state.getCaseId
+        const contextCase = this.state.cases[caseId - 1];
+
+
+        for (var j = 1; j <= contextCase.totalEvidences; j++) {
+            let evd = await this.state.securex.methods.getEvidenceById(caseId, j).call()
+            this.setState({
+                evidences: [...this.state.evidences, evd]
+            })
+        }
+        console.log(this.state.evidences)
+    }
+
+    captureFile = event => {
+
+        event.preventDefault()
+        const file = event.target.files[0]
+        const reader = new window.FileReader()
+        reader.readAsArrayBuffer(file)
+
+        reader.onloadend = () => {
+            this.setState({ buffer: Buffer(reader.result) })
+            console.log('buffer', this.state.buffer)
+        }
+    }
+
+    uploadFile = () => {
+
+        console.log("Submitting file to ipfs...")
+
+        //adding file to the IPFS
+        ipfs.add(this.state.buffer, (error, result) => {
+            console.log('Ipfs result', result)
+            if (error) {
+                console.error(error)
+                return
+            }
+
+            this.setState({ loading: true, })
+
+            console.log(this.state.evidenceDetails)
+
+            this.state.securex.methods.registerEvidence(this.state.evidenceDetails.caseId,
+                this.state.evidenceDetails.description,
+                result[0].hash,
+
+                this.state.evidenceDetails.createdDate).send({ from: this.state.account }).on('transactionHash', (hash) => {
+                   window.location.reload()
+                    this.setState({ loading: false })
+                })
+        })
+    }
     registerCase = () => {
         console.log("Age Verification")
 
@@ -72,8 +125,14 @@ class App extends Component {
 
         this.setState({ loading: true })
 
-        this.state.securex.methods.registerCase(this.state.caseDetails.courtId
-          )
+        this.state.securex.methods.registerCase(this.state.caseDetails.courtId,
+
+            this.state.caseDetails.caseDescription,
+            this.state.caseDetails.startDateTime).send({ from: this.state.account }).on('transactionHash', (hash) => {
+                let newCaseId = this.state.cases.length + 1
+                window.alert("Successfully registered with Case ID: " + newCaseId)
+                this.setState({ loading: false })
+            })
 
     }
 
@@ -85,7 +144,14 @@ class App extends Component {
             }
         });
     }
-  
+    handleEvidenceInputChange = (event) => {
+        this.setState({
+            evidenceDetails: {
+                ...this.state.evidenceDetails,
+                [event.target.name]: event.target.value
+            }
+        });
+    }
     handleEvidenceCaseInput = (event) => {
         this.setState({
             getCaseId: event.target.value
@@ -105,10 +171,26 @@ class App extends Component {
             account: '',
             securex: null,
             loading: true,
+            evidenceDetails: {
+                caseId: '',
+                description: '',
+
+                createdDate: ''
+            },
             caseDetails: {
-                courtId: ''
-            }
+                courtId: '',
+
+                caseDescription: '',
+                startDateTime: ''
+            },
+            uploadedImage: '',
+            cases: [],
+            evidences: [],
+            getCaseId: ''
         }
+
+        this.uploadFile = this.uploadFile.bind(this)
+        this.captureFile = this.captureFile.bind(this)
     }
 
     render() {
@@ -127,9 +209,11 @@ class App extends Component {
                                 <main role="main" className="col-lg-12 ml-auto mr-auto" style={{ maxWidth: '500px' }}>
                                     <div className="content mr-auto ml-auto">
                                         <p>&nbsp;</p>
+                                       
                                         <Card>
-                                            <Card.Header as="h2">Verifying Age</Card.Header>
+                                            <Card.Header as="h2">Verify Age</Card.Header>
                                             <Card.Body>
+                                            
                                                 <Card.Title>Enter your age</Card.Title>
 
                                                 <Form onSubmit={(event) => {
@@ -137,20 +221,17 @@ class App extends Component {
                                                     event.preventDefault()
                                                     this.registerCase();
 
-                                                }}>
-                                                    <Form.Group className="mb-3">
-                                                        <Form.Control type="text" placeholder="Age" value={this.state.caseDetails.courtId}
-                                                            onChange={this.handleCaseInputChange} name="age" />
+                                                }}> 
+                                                <Form.Group className="mb-3">
+                                                <Form.Control type="text" placeholder="age" value={this.state.caseDetails.courtId}
+                                                    onChange={this.handleCaseInputChange} name="courtId" />
+
                                                     </Form.Group>
-                                                    <Button variant="primary" type="submit" >Verify</Button>
+                                                    <Button variant="primary" type="submit" >Verify Age</Button>
 
                                                 </Form>
-
-
-
                                             </Card.Body>
                                         </Card>
-                                        <br /><br />              
                                         <p>&nbsp;</p>
 
                                     </div>
