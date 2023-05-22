@@ -1,4 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
+import Tesseract from 'tesseract.js';
+import DotLoader from 'react-spinners/DotLoader';
 
 import {
   Text,
@@ -17,6 +19,7 @@ import { generateBroadcastParams } from '@utils/zk/zk-witness';
 import { truncateAddress } from '@utils/wallet';
 
 import { useWalletContext } from './WalletContext';
+import DocScan from './docScan';
 
 const AgeCheck = () => {
   const [age, setAge] = React.useState<number>(19);
@@ -184,6 +187,7 @@ const AgeCheck = () => {
           Age verification using Zero Knowledge Proofs.
         </Heading>
       </Box>
+            <DocScan setAge={setAge} />
       <Box
         sx={{
           display: 'flex',
@@ -248,6 +252,7 @@ const AgeCheck = () => {
         <Text fontSize="lg">{statusMsg}</Text>
         {isLoading && <Spinner />}
       </Flex>
+
     </div>
   );
 };

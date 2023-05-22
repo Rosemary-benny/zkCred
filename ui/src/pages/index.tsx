@@ -5,7 +5,6 @@ import {
   Box,
   Heading,
   Button,
-  Text,
   Divider,
   Container,
   Flex,
@@ -21,7 +20,7 @@ const Index = () => {
     <Main
       meta={
         <Meta
-          title="Zk Block"
+          title="zkCred"
           description="Zero Knowledge Proofs"
         />
       }
@@ -37,7 +36,7 @@ const Index = () => {
               zk-Cred{' '}
             </Heading>
 
-         
+        
           </Box>
           <Divider />
         </Container>
@@ -58,20 +57,7 @@ const Index = () => {
                     zk Age Verification
                   </Button>
                 </Link>
-                
-                {/* <Link href="" passHref>
-                  <Button
-                    disabled
-                    bg="black"
-                    color="white"
-                    _hover={{ bg: 'gray.600' }}
-                  >
-                    {' '}
-                    zK Authentication (coming soon)
-                  </Button>
-                </Link> */}
               </Stack>
-              <StatusChecklist />
             </Flex>
           </Container>
         </Box>
