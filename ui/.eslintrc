@@ -32,7 +32,7 @@
       ],
       "parserOptions": {
         "project": "ui/tsconfig.json",
-        "tsconfigRootDir": ".."
+        "tsconfigRootDir": "."
       },
       "rules": {
         "no-console": "warn",

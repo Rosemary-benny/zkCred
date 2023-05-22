@@ -36,15 +36,6 @@ export const getAgeCheckContract = (chainId: number) => {
   }
   return undefined;
 };
-export const getVotingContract = (chainId: number) => {
-  try {
-    const contractAddr = getContractAddressByName('voting', chainId);
-    return getContract(VotingContract.abi, contractAddr, chainId) as Voting;
-  } catch (e) {
-    console.log(`Error getting contract for the chainId ${chainId}`, e);
-  }
-  return undefined;
-};
 
 export const getContractByName = (contractName: string, chainId: number) => {
   try {
