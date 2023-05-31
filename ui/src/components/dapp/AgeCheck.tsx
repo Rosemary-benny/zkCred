@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import Tesseract from 'tesseract.js';
-import DotLoader from 'react-spinners/DotLoader';
+
 
 import {
   Text,
@@ -48,6 +47,7 @@ const AgeCheck = () => {
         setAlert({
           open: true,
           message: `Age Verified for ${truncateAddress(address)}`,
+          
         });
         setAgeVerified(true);
         setStatusMsg(undefined);
