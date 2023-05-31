@@ -11,6 +11,7 @@ import {
   Flex,
   Alert,
   Spinner,
+  useToast,
 } from '@chakra-ui/react';
 
 import { getAgeCheckContract } from '@hooks/contractHelpers';
@@ -19,8 +20,14 @@ import { truncateAddress } from '@utils/wallet';
 
 import { useWalletContext } from './WalletContext';
 import DocScan from './docScan';
+import { ethers } from 'ethers';
+import { MINT_ABI } from '@abi/ExampleMint';
 
 const AgeCheck = () => {
+
+  const MINT_NFT_CONTRACT_ADDRESS = '0x52CF510220139AD446Befa04a9A03dCD6356d782';
+
+  const [minting, setMinting] = useState<boolean>(false);
   const [age, setAge] = React.useState<number>(19);
   const [error, setError] = React.useState<string | undefined>();
   const [statusMsg, setStatusMsg] = React.useState<string | undefined>();
@@ -31,6 +38,7 @@ const AgeCheck = () => {
   });
   const [ageVerified, setAgeVerified] = React.useState<boolean>(false);
   const { chainId, provider, account } = useWalletContext();
+  const toast = useToast()
 
   const ageCheckContract = React.useMemo(
     () => getAgeCheckContract(chainId ?? 1666700000),
@@ -47,7 +55,7 @@ const AgeCheck = () => {
         setAlert({
           open: true,
           message: `Age Verified for ${truncateAddress(address)}`,
-          
+
         });
         setAgeVerified(true);
         setStatusMsg(undefined);
@@ -128,6 +136,55 @@ const AgeCheck = () => {
     }
   };
 
+
+  // Mint NFT Function
+  const handleMint = async () => {
+
+    setMinting(true)
+    toast({
+      title: 'Miniting NFT',
+      status: 'info',
+      duration: 4000,
+      isClosable: false,
+    })
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum as ethers.providers.ExternalProvider)
+
+      const contract = new ethers.Contract(MINT_NFT_CONTRACT_ADDRESS, MINT_ABI, provider)
+
+      await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+      // Get the signer from the provider
+      const signer = provider.getSigner();
+      console.log({ signer })
+
+      // Create a transaction object for the mint function
+      const transaction = await contract.connect(signer).safeMint();
+      console.log({ transaction })
+
+      // Prompt the user to sign the transaction using MetaMask
+      const response = await transaction.wait();
+      console.log({ response })
+      toast({
+        title: 'NFT Minted',
+        status: 'success',
+        duration: 4000,
+        isClosable: false,
+      })
+    } catch (err) {
+      console.log(err)
+      toast({
+        title: 'NFT Mint Failed',
+        description: "Please try again!",
+        status: 'error',
+        duration: 4000,
+        isClosable: false,
+      })
+    } finally {
+      setMinting(false)
+    }
+  }
+
   const handleReset = async () => {
     if (ageCheckContract == null || provider == null) {
       return;
@@ -161,6 +218,7 @@ const AgeCheck = () => {
       </Text>
     );
   });
+
   return (
     <div>
       <Box display="flex" flexDirection="row" justifyContent="center">
@@ -187,7 +245,7 @@ const AgeCheck = () => {
           Age verification using Zero Knowledge Proofs.
         </Heading>
       </Box>
-            <DocScan setAge={setAge} />
+      <DocScan setAge={setAge} />
       <Box
         sx={{
           display: 'flex',
@@ -212,8 +270,8 @@ const AgeCheck = () => {
           {account ? (
             <Box display="flex" flexDirection="column" justifyContent="center">
               <AgeVerfiedText />
-              <Button variant="solid" onClick={handleReset}>
-                Reset
+              <Button variant="solid" onClick={handleMint}>
+                {minting ? <Spinner size='xs' /> : 'Mint NFT'}
               </Button>
             </Box>
           ) : (
