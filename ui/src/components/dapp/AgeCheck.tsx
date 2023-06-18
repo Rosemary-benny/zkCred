@@ -172,6 +172,7 @@ const AgeCheck = () => {
       // Prompt the user to sign the transaction using MetaMask
       const response = await transaction.wait();
       console.log({ response });
+      setMinting('minted');
       toast({
         title: 'NFT Minted',
         status: 'success',
