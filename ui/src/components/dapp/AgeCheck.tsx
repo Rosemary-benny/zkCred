@@ -24,7 +24,7 @@ import { MINT_ABI } from '@abi/ExampleMint';
 
 const AgeCheck = () => {
   const MINT_NFT_CONTRACT_ADDRESS =
-    '0x52CF510220139AD446Befa04a9A03dCD6356d782';
+    '0xCd44114d387d2bB4d64F9caFa3c67Ba3E9D19F6e';
 
   const [minting, setMinting] = useState<'notMinted' | 'minting' | 'minted'>(
     'notMinted',
