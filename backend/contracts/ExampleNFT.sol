@@ -17,7 +17,7 @@ contract ZKCred is ERC721, ERC721Enumerable, Pausable, Ownable {
 
     function _baseURI() internal pure override returns (string memory) {
         return
-            "https://ipfs.filebase.io/ipfs/QmWwUWWX9QUYctHesrBkMH2PMN7Y7Hy3paHfH32Gdzp4Lm/";
+            "https://ipfs.filebase.io/ipfs/QmbxahJofWFNEYRvJxB9P4vnNjqfDBaZoTmqB1cgZAei4r/";
     }
 
     function pause() public onlyOwner {
@@ -57,7 +57,7 @@ contract ZKCred is ERC721, ERC721Enumerable, Pausable, Ownable {
         return
             string(
                 abi.encodePacked(
-                    "https://ipfs.filebase.io/ipfs/QmWwUWWX9QUYctHesrBkMH2PMN7Y7Hy3paHfH32Gdzp4Lm/",
+                    "https://ipfs.filebase.io/ipfs/QmbxahJofWFNEYRvJxB9P4vnNjqfDBaZoTmqB1cgZAei4r/",
                     Strings.toString(id),
                     ".json"
                 )
