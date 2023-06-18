@@ -1,69 +1,54 @@
 import React from 'react';
 
-import Link from 'next/link';
-import {
-  Box,
-  Heading,
-  Button,
-  Divider,
-  Container,
-  Flex,
-  Stack,
-} from '@chakra-ui/react';
-import StatusChecklist from '@components/home/StatusChecklist';
+import { Box, Container } from '@chakra-ui/react';
+// import dynamic from 'next/dynamic';
 import { Meta } from '@layout/Meta';
 import { Main } from '@templates/Main';
+import WalletConnectComponent from '@components/dapp/WalletConnection';
+import AgeCheck from '../components/dapp/AgeCheck';
 
+// const DynamicComponentWithNoSSR = dynamic(
+//   () => import('../components/dapp/AgeCheck'),
+//   {
+//     ssr: false,
+//   },
+// );
+// const WalletConnectComponent = dynamic(
+//   () => import('../components/dapp/WalletConnection'),
+//   {
+//     ssr: false,
+//   },
+// );
 
-const Index = () => {
+const Dapp = () => {
   return (
-    <Main
-      meta={
-        <Meta
-          title="zkCred"
-          description="Zero Knowledge Proofs"
-        />
-      }
-    >
+    <Main meta={<Meta title="ZkCred" description="Zero Knowledge Proofs" />}>
       <Box display="flex" flexDirection="column" justifyContent="center">
-        <Container maxW="container.lg" pb="90px">
-          <Box py={['23px', '23px', '35px']} color="gray.200">
-            <Heading
-              color="black"
-              fontSize={['22px', '22px', '28px']}
-              mb={['8px', '8px', '16px']}
+        <Container maxW="container.lg">
+          <Box
+            display="flex"
+            flexDirection="row"
+            flex="1"
+            justifyContent="center"
+          >
+            <Box
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignSelf: 'center',
+                maxWidth: '1080px',
+                minHeight: '720px',
+                minWidth: '1080px',
+              }}
             >
-              zk-Cred{' '}
-            </Heading>
-
-        
+              <Box>{/* <WalletConnectComponent /> */}</Box>
+              <AgeCheck />
+            </Box>
           </Box>
-          <Divider />
         </Container>
-
-        <Box>
-          <Container maxW="container.lg">
-            <Flex
-              flexDirection={['column', 'row']}
-              justifyContent="space-between"
-              mb="16px"
-            >
-              <Stack spacing="24px">
-                
-
-                <Divider />
-                <Link href="/dapp" passHref>
-                  <Button bg="black" color="white" _hover={{ bg: 'gray.600' }}>
-                    zk Age Verification
-                  </Button>
-                </Link>
-              </Stack>
-            </Flex>
-          </Container>
-        </Box>
       </Box>
     </Main>
   );
 };
 
-export default Index;
+export default Dapp;

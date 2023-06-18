@@ -10,8 +10,10 @@ import {
   Link,
   Stack,
   Text,
+  Button,
 } from '@chakra-ui/react';
 import { Links } from '@config/constants';
+import { useWalletContext } from './dapp/WalletContext';
 
 type MenuLinkProps = {
   text: string;
@@ -47,9 +49,7 @@ function DesktopMenuLinks() {
       alignItems="center"
       color="gray.50"
       fontSize="15px"
-    >
-      
-    </Stack>
+    ></Stack>
   );
 }
 
@@ -89,8 +89,6 @@ function MobileMenuLinks() {
           spacing="12px"
           zIndex={999}
         >
-        
-          
           <CloseButton
             onClick={() => setIsOpen(false)}
             pos="fixed"
@@ -110,6 +108,7 @@ type GlobalHeaderProps = {
 
 export function GlobalHeader(props: GlobalHeaderProps) {
   const { variant = 'solid' } = props;
+  const { account, connectWallet, disconnect } = useWalletContext();
 
   return (
     <Box bg={variant === 'solid' ? 'gray.900' : 'transparent'} p="20px 0">
@@ -136,8 +135,32 @@ export function GlobalHeader(props: GlobalHeaderProps) {
               <Text as="span">zkCred</Text>
             </Link>
           </Box>
-          <DesktopMenuLinks />
-          <MobileMenuLinks />
+          <Box>
+            {account ? (
+              <Button
+                variant="solid"
+                bg="black"
+                _hover={{ bg: 'gray.600' }}
+                color="white"
+                onClick={disconnect}
+                title="Disconnect Wallet"
+              >
+                {account.trim().slice(0, 4) + '....' + account.trim().slice(-4)}
+              </Button>
+            ) : (
+              <Button
+                variant="solid"
+                bg="black"
+                _hover={{ bg: 'gray.600' }}
+                color="white"
+                onClick={connectWallet}
+              >
+                Connect Wallet
+              </Button>
+            )}
+            <DesktopMenuLinks />
+            <MobileMenuLinks />
+          </Box>
         </Flex>
       </Container>
     </Box>

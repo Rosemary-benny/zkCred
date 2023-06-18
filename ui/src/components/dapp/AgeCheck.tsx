@@ -18,7 +18,7 @@ import { generateBroadcastParams } from '@utils/zk/zk-witness';
 import { truncateAddress } from '@utils/wallet';
 
 import { useWalletContext } from './WalletContext';
-import DocScan from './docScan';
+import DocScan from './DocScan';
 import { ethers } from 'ethers';
 import { MINT_ABI } from '@abi/ExampleMint';
 
@@ -53,26 +53,29 @@ const AgeCheck = () => {
       return;
     }
 
-    ageCheckContract.on('AgeVerfied', (address, isVerified) => {
-      if (isVerified && address === account) {
-        setAlert({
-          open: true,
-          message: `Age Verified for ${truncateAddress(address)}`,
-        });
-        setAgeVerified(true);
-        setStatusMsg(undefined);
-        setLoading(false);
-        return;
-      }
-      if (!isVerified && address === account) {
-        setAlert({
-          open: true,
-          message: `Age flag reset for ${truncateAddress(address)}`,
-        });
-        setAgeVerified(false);
-        return;
-      }
-    });
+    ageCheckContract.on(
+      'AgeVerfied',
+      (address: string, isVerified: boolean) => {
+        if (isVerified && address === account) {
+          setAlert({
+            open: true,
+            message: `Age Verified for ${truncateAddress(address)}`,
+          });
+          setAgeVerified(true);
+          setStatusMsg(undefined);
+          setLoading(false);
+          return;
+        }
+        if (!isVerified && address === account) {
+          setAlert({
+            open: true,
+            message: `Age flag reset for ${truncateAddress(address)}`,
+          });
+          setAgeVerified(false);
+          return;
+        }
+      },
+    );
   }, [chainId, account, ageCheckContract]);
 
   const getAgeVerificationStatus = useCallback(async () => {
@@ -92,6 +95,7 @@ const AgeCheck = () => {
   }, [account, getAgeVerificationStatus, chainId, ageCheckContract]);
 
   const handleVerify = async () => {
+    console.log(ageCheckContract, provider, account, chainId);
     if (ageCheckContract == null || provider == null) {
       return;
     }
@@ -245,6 +249,7 @@ const AgeCheck = () => {
           justifyContent: 'center',
           alignContent: 'center',
           marginBottom: '16px',
+          marginTop: '20px',
         }}
       >
         <Heading variant={'h2'}>

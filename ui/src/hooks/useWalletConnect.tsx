@@ -32,7 +32,7 @@ export const useWalletConnect = () => {
   const [account, setAccount] = useState<string | undefined>();
   const [error, setError] = useState('');
   const [chainId, setChainId] = useState<number | undefined>();
-  const [network, setNetwork] = useState<number | undefined>(8001);
+  const [network, setNetwork] = useState<number | undefined>(80001);
 
   const web3Modal: Web3Modal | undefined = useWalletModal();
 
@@ -148,7 +148,7 @@ export const useWalletConnect = () => {
     }
 
     switchNetwork(network);
-  }, [provider, chainId]);
+  }, [provider, chainId, network, switchNetwork]);
 
   return {
     provider,
