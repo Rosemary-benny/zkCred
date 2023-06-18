@@ -54,42 +54,7 @@ const WalletConnectComponent = () => {
       </Select>
     </FormControl>
   ));
-  return (
-    <Box
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        height: '140px',
-      }}
-    >
-      <Box
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-        }}
-      >
-        <ChainIdSelect />
-        <Box ml="8px">
-          {!account ? (
-            <Button variant="solid" size="md" onClick={connectWallet}>
-              Connect Wallet
-            </Button>
-          ) : (
-            <Button variant="solid" size="md" onClick={connectWallet}>
-              Connect
-            </Button>
-          )}
-        </Box>
-      </Box>
-      {account && (
-        <>
-          <Text fontSize="md">{`Account: ${truncateAddress(account)}`}</Text>
-          <Text fontSize="md">{`Network ID: ${chainId ?? 'No Network'}`}</Text>
-        </>
-      )}
-    </Box>
-  );
+  return <div></div>;
 };
 
 export default WalletConnectComponent;

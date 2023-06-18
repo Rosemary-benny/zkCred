@@ -1,6 +1,5 @@
 import React, { useEffect, useCallback, useState } from 'react';
 
-
 import {
   Text,
   Box,
@@ -24,21 +23,24 @@ import { ethers } from 'ethers';
 import { MINT_ABI } from '@abi/ExampleMint';
 
 const AgeCheck = () => {
+  const MINT_NFT_CONTRACT_ADDRESS =
+    '0x52CF510220139AD446Befa04a9A03dCD6356d782';
 
-  const MINT_NFT_CONTRACT_ADDRESS = '0x52CF510220139AD446Befa04a9A03dCD6356d782';
-
-  const [minting, setMinting] = useState<boolean>(false);
-  const [age, setAge] = React.useState<number>(19);
+  const [minting, setMinting] = useState<'notMinted' | 'minting' | 'minted'>(
+    'notMinted',
+  );
+  const [age, setAge] = React.useState<number>(0);
   const [error, setError] = React.useState<string | undefined>();
   const [statusMsg, setStatusMsg] = React.useState<string | undefined>();
   const [isLoading, setLoading] = useState<boolean>(false);
+  const [canMint, setCanMint] = useState(false);
   const [alert, setAlert] = React.useState<{ open: boolean; message: string }>({
     open: false,
     message: '',
   });
   const [ageVerified, setAgeVerified] = React.useState<boolean>(false);
   const { chainId, provider, account } = useWalletContext();
-  const toast = useToast()
+  const toast = useToast();
 
   const ageCheckContract = React.useMemo(
     () => getAgeCheckContract(chainId ?? 1666700000),
@@ -46,6 +48,7 @@ const AgeCheck = () => {
   );
 
   useEffect(() => {
+    console.log(1);
     if (ageCheckContract == null || chainId == null || account == null) {
       return;
     }
@@ -55,7 +58,6 @@ const AgeCheck = () => {
         setAlert({
           open: true,
           message: `Age Verified for ${truncateAddress(address)}`,
-
         });
         setAgeVerified(true);
         setStatusMsg(undefined);
@@ -119,6 +121,7 @@ const AgeCheck = () => {
             open: true,
             message: `Transaction broadcasted with hash ${tx.hash}`,
           });
+          setCanMint(true);
         }
       } catch (e) {
         setAlert({
@@ -136,54 +139,57 @@ const AgeCheck = () => {
     }
   };
 
-
   // Mint NFT Function
   const handleMint = async () => {
-
-    setMinting(true)
+    setMinting('minting');
     toast({
       title: 'Miniting NFT',
       status: 'info',
       duration: 4000,
       isClosable: false,
-    })
+    });
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum as ethers.providers.ExternalProvider)
+      const provider = new ethers.providers.Web3Provider(
+        window.ethereum as ethers.providers.ExternalProvider,
+      );
 
-      const contract = new ethers.Contract(MINT_NFT_CONTRACT_ADDRESS, MINT_ABI, provider)
+      const contract = new ethers.Contract(
+        MINT_NFT_CONTRACT_ADDRESS,
+        MINT_ABI,
+        provider,
+      );
 
       await window.ethereum.request({ method: 'eth_requestAccounts' });
 
       // Get the signer from the provider
       const signer = provider.getSigner();
-      console.log({ signer })
+      console.log({ signer });
 
       // Create a transaction object for the mint function
       const transaction = await contract.connect(signer).safeMint();
-      console.log({ transaction })
+      console.log({ transaction });
 
       // Prompt the user to sign the transaction using MetaMask
       const response = await transaction.wait();
-      console.log({ response })
+      console.log({ response });
       toast({
         title: 'NFT Minted',
         status: 'success',
         duration: 4000,
         isClosable: false,
-      })
+      });
     } catch (err) {
-      console.log(err)
+      setMinting('notMinted');
+      console.log(err);
       toast({
         title: 'NFT Mint Failed',
-        description: "Please try again!",
+        description: 'Please try again!',
         status: 'error',
         duration: 4000,
         isClosable: false,
-      })
-    } finally {
-      setMinting(false)
+      });
     }
-  }
+  };
 
   const handleReset = async () => {
     if (ageCheckContract == null || provider == null) {
@@ -252,6 +258,7 @@ const AgeCheck = () => {
           justifyContent: 'center',
           alignContent: 'center',
           marginBottom: '16px',
+          marginTop: '16px',
         }}
       >
         <Box
@@ -268,11 +275,32 @@ const AgeCheck = () => {
           }}
         >
           {account ? (
-            <Box display="flex" flexDirection="column" justifyContent="center">
+            <Box
+              display="flex"
+              flexDirection="column"
+              justifyContent="center"
+              marginTop="10px"
+            >
               <AgeVerfiedText />
-              <Button variant="solid" onClick={handleMint}>
-                {minting ? <Spinner size='xs' /> : 'Mint NFT'}
-              </Button>
+              {canMint ? (
+                <Button
+                  variant="solid"
+                  onClick={handleMint}
+                  disabled={minting == 'minted'}
+                >
+                  {minting == 'notMinted' ? (
+                    'Mint NFT'
+                  ) : minting == 'minting' ? (
+                    <Spinner size="xs" />
+                  ) : minting == 'minted' ? (
+                    'NFT Minted'
+                  ) : (
+                    ''
+                  )}
+                </Button>
+              ) : (
+                ''
+              )}
             </Box>
           ) : (
             <Text fontSize="lg" variant="bold" as="b">
@@ -287,7 +315,7 @@ const AgeCheck = () => {
           id="outlined-basic"
           value={age}
           type="number"
-          disabled={!account}
+          disabled
           onChange={(e) => setAge(Number(e.target.value ?? 0))}
           isInvalid={!!error}
           errorBorderColor="red.300"
@@ -310,7 +338,6 @@ const AgeCheck = () => {
         <Text fontSize="lg">{statusMsg}</Text>
         {isLoading && <Spinner />}
       </Flex>
-
     </div>
   );
 };

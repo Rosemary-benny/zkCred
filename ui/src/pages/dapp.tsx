@@ -22,14 +22,7 @@ import AgeCheck from '../components/dapp/AgeCheck';
 
 const Dapp = () => {
   return (
-    <Main
-      meta={
-        <Meta
-          title="ZkCred"
-          description="Zero Knowledge Proofs"
-        />
-      }
-    >
+    <Main meta={<Meta title="ZkCred" description="Zero Knowledge Proofs" />}>
       <Box display="flex" flexDirection="column" justifyContent="center">
         <Container maxW="container.lg">
           <Box
