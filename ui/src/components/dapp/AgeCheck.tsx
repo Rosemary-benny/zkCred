@@ -18,7 +18,7 @@ import { generateBroadcastParams } from '@utils/zk/zk-witness';
 import { truncateAddress } from '@utils/wallet';
 
 import { useWalletContext } from './WalletContext';
-import DocScan from './docScan';
+import DocScan from './DocScan';
 import { ethers } from 'ethers';
 import { MINT_ABI } from '@abi/ExampleMint';
 
@@ -30,9 +30,10 @@ const AgeCheck = () => {
     'notMinted',
   );
   const [age, setAge] = React.useState<number>(0);
+  const [isScanned, setIsScanned] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | undefined>();
   const [statusMsg, setStatusMsg] = React.useState<string | undefined>();
-  const [isLoading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const [canMint, setCanMint] = useState(false);
   const [alert, setAlert] = React.useState<{ open: boolean; message: string }>({
     open: false,
@@ -53,26 +54,29 @@ const AgeCheck = () => {
       return;
     }
 
-    ageCheckContract.on('AgeVerfied', (address, isVerified) => {
-      if (isVerified && address === account) {
-        setAlert({
-          open: true,
-          message: `Age Verified for ${truncateAddress(address)}`,
-        });
-        setAgeVerified(true);
-        setStatusMsg(undefined);
-        setLoading(false);
-        return;
-      }
-      if (!isVerified && address === account) {
-        setAlert({
-          open: true,
-          message: `Age flag reset for ${truncateAddress(address)}`,
-        });
-        setAgeVerified(false);
-        return;
-      }
-    });
+    ageCheckContract.on(
+      'AgeVerfied',
+      (address: string, isVerified: boolean) => {
+        if (isVerified && address === account) {
+          setAlert({
+            open: true,
+            message: `Age Verified for ${truncateAddress(address)}`,
+          });
+          setAgeVerified(true);
+          setStatusMsg(undefined);
+          setLoading(false);
+          return;
+        }
+        if (!isVerified && address === account) {
+          setAlert({
+            open: true,
+            message: `Age flag reset for ${truncateAddress(address)}`,
+          });
+          setAgeVerified(false);
+          return;
+        }
+      },
+    );
   }, [chainId, account, ageCheckContract]);
 
   const getAgeVerificationStatus = useCallback(async () => {
@@ -96,7 +100,7 @@ const AgeCheck = () => {
       return;
     }
     setLoading(true);
-    setStatusMsg('Generating Proof');
+    setStatusMsg('Generating Proof...');
     try {
       const [a, b, c, input] = await generateBroadcastParams(
         {
@@ -108,10 +112,10 @@ const AgeCheck = () => {
         'circuit',
       );
       setError(undefined);
-      setStatusMsg('Proof Generated..');
+      setStatusMsg('Proof Generated...');
       const proof = [...a, ...b[0], ...b[1], ...c];
 
-      setStatusMsg('Verifying Proof..');
+      setStatusMsg('Verifying Proof...');
       try {
         const tx = await ageCheckContract
           .connect(provider.getSigner())
@@ -217,6 +221,7 @@ const AgeCheck = () => {
   const AgeVerfiedText = React.memo(() => {
     if (account == null) {
       return null;
+      console.log(ageCheckContract, provider, account, chainId);
     }
     return (
       <Text mb="8px">
@@ -246,13 +251,13 @@ const AgeCheck = () => {
           justifyContent: 'center',
           alignContent: 'center',
           marginBottom: '16px',
+          marginTop: '20px',
         }}
       >
         <Heading variant={'h2'}>
           Age verification using Zero Knowledge Proofs.
         </Heading>
       </Box>
-      <DocScan setAge={setAge} />
       <Box
         sx={{
           display: 'flex',
@@ -273,6 +278,7 @@ const AgeCheck = () => {
             alignItems: 'center',
             padding: '8px',
             borderRadius: '16px',
+            marginTop: '30px',
           }}
         >
           {account ? (
@@ -311,33 +317,42 @@ const AgeCheck = () => {
           )}
         </Box>
       </Box>
-      <Flex justifyContent="center">
-        <Input
-          id="outlined-basic"
-          value={age}
-          type="number"
-          disabled
-          onChange={(e) => setAge(Number(e.target.value ?? 0))}
-          isInvalid={!!error}
-          errorBorderColor="red.300"
-          w="140px"
-          style={{ marginRight: '8px' }}
-        />
+      <DocScan
+        setAge={setAge}
+        onScan={() => {
+          setIsScanned(true);
+        }}
+      />
+      {isScanned && (
+        <Flex justifyContent="center">
+          <Input
+            id="outlined-basic"
+            value={age}
+            type="number"
+            disabled
+            onChange={(e) => setAge(Number(e.target.value ?? 0))}
+            isInvalid={!!error}
+            errorBorderColor="red.300"
+            w="140px"
+            style={{ marginRight: '8px' }}
+          />
 
-        <Button
-          variant="solid"
-          bg="black"
-          _hover={{ bg: 'gray.600' }}
-          color="white"
-          onClick={handleVerify}
-          disabled={!account}
-        >
-          Verify Age
-        </Button>
-      </Flex>
+          <Button
+            variant="solid"
+            bg="black"
+            _hover={{ bg: 'gray.600' }}
+            color="white"
+            onClick={handleVerify}
+            isLoading={loading}
+            loadingText="Verifying"
+          >
+            Verify Age
+          </Button>
+        </Flex>
+      )}
       <Flex justifyContent="center" mt="8px">
         <Text fontSize="lg">{statusMsg}</Text>
-        {isLoading && <Spinner />}
+        {loading && <Spinner />}
       </Flex>
     </div>
   );

@@ -8,15 +8,27 @@ import React, {
 } from 'react';
 import Tesseract from 'tesseract.js';
 import DotLoader from 'react-spinners/DotLoader';
-import { Button } from '@chakra-ui/react';
+import {
+  Button,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  Box,
+} from '@chakra-ui/react';
 
-const DocScan: FC<{ setAge: Dispatch<SetStateAction<number>> }> = ({
-  setAge,
-}) => {
+const DocScan: FC<{
+  setAge: Dispatch<SetStateAction<number>>;
+  onScan: () => void;
+}> = ({ setAge, onScan }) => {
   const [file, setFile] = useState<File>();
   const [previewUrl, setPreviewUrl] = useState<string | ArrayBuffer>('');
   const [dob, setDOB] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files && event.target.files[0];
@@ -26,6 +38,7 @@ const DocScan: FC<{ setAge: Dispatch<SetStateAction<number>> }> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result || '');
+        setIsOpen(true);
       };
       reader.readAsDataURL(file);
     } else {
@@ -52,7 +65,10 @@ const DocScan: FC<{ setAge: Dispatch<SetStateAction<number>> }> = ({
       let age = new Date().getTime() - new Date(output).getTime();
 
       setAge(Math.floor(age / (60 * 60 * 24 * 365 * 1000)));
+      setIsOpen(false);
     }
+
+    onScan();
   };
 
   return (
@@ -72,52 +88,132 @@ const DocScan: FC<{ setAge: Dispatch<SetStateAction<number>> }> = ({
               bg="black"
               _hover={{ bg: 'gray.600' }}
               color="white"
+              as="label"
+              htmlFor="file-upload"
+              sx={{ marginTop: '20px' }}
             >
-              <label htmlFor="file-upload">Upload your document</label>
+              Upload your document
             </Button>
           </div>
           {previewUrl && (
-            <div
-              style={{
-                position: 'relative',
-                display: 'flex',
-                justifyContent: 'center',
-                padding: 20,
-              }}
-            >
-              <img
-                src={previewUrl.toString()}
-                alt="Document Preview"
-                style={{ maxHeight: '700px' }}
-              />
-              {loading && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: '0',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                >
-                  <DotLoader />
-                </div>
-              )}
-            </div>
+            <>
+              <Modal
+                isOpen={isOpen}
+                onClose={() => {
+                  setIsOpen(false);
+                }}
+              >
+                <ModalOverlay />
+                <ModalContent>
+                  <ModalHeader></ModalHeader>
+                  <ModalCloseButton />
+                  <ModalBody>
+                    <div
+                      style={{
+                        position: 'relative',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        padding: 10,
+                      }}
+                    >
+                      <img
+                        src={previewUrl.toString()}
+                        alt="Document Preview"
+                        style={{ maxHeight: '650px' }}
+                      />
+                      {loading && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            inset: '0',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <DotLoader />
+                        </div>
+                      )}
+                    </div>
+                  </ModalBody>
+
+                  <ModalFooter>
+                    <Button
+                      colorScheme="gray"
+                      mr={3}
+                      onClick={() => {
+                        setIsOpen(false);
+                      }}
+                    >
+                      Close
+                    </Button>
+                    <Button
+                      variant="solid"
+                      bg="black"
+                      _hover={{ bg: 'gray.600' }}
+                      color="white"
+                      onClick={() => {
+                        document.getElementById('scan-btn')?.click();
+                      }}
+                      isLoading={loading}
+                      loadingText="Scanning"
+                    >
+                      Scan Document
+                    </Button>
+                  </ModalFooter>
+                </ModalContent>
+              </Modal>
+            </>
           )}
           {previewUrl && (
-            <div style={{ margin: 20 }}>
-              <Button variant="solid" type="submit" bg="black" color="white">
+            <Box
+              sx={{
+                margin: 10,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                columnGap: 10,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setIsOpen(true);
+                }}
+              >
+                <div style={{ borderRadius: 10, overflow: 'hidden' }}>
+                  <img
+                    src={previewUrl.toString()}
+                    alt="Document Preview"
+                    style={{ maxHeight: '100px' }}
+                  />
+                </div>
+                <div style={{ fontSize: 12 }}>Click to preview</div>
+              </div>
+              <Button
+                variant="solid"
+                bg="black"
+                _hover={{ bg: 'gray.600' }}
+                color="white"
+                id="scan-btn"
+                type="submit"
+                isLoading={loading}
+                loadingText="Scanning"
+              >
                 Scan Document
               </Button>
-            </div>
+            </Box>
           )}
         </form>
         {dob && (
-          <div className="ocr-results">
-            <p>Date of Birth: {dob}</p>
-            {}
-          </div>
+          <Box sx={{ margin: 10, fontWeight: 500, fontSize: 20 }}>
+            Date of Birth: {dob}
+          </Box>
         )}
       </div>
     </div>
